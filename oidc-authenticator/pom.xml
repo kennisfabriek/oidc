@@ -23,7 +23,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.xwiki.contrib.oidc</groupId>
+    <groupId>wiki.kennisfabriek.auth</groupId>
     <artifactId>oidc</artifactId>
     <version>1.15.2-SNAPSHOT</version>
   </parent>
@@ -79,24 +79,30 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+<build>
+	<plugins>
+		<plugin>
+			<artifactId>maven-deploy-plugin</artifactId>
+			<version>2.8.1</version>
+			<executions>
+				<execution>
+					<id>default-deploy</id>
+					<phase>deploy</phase>
+					<goals>
+						<goal>deploy</goal>
+					</goals>
+				</execution>
+			</executions>
+		</plugin>
+	</plugins>
+</build>
+	<distributionManagement>
+		<snapshotRepository>
 
-  <build>
-    <plugins>
-      <plugin>
-        <!-- Apply the Checkstyle configurations defined in the top level pom.xml file -->
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-          <excludes>
-              org/xwiki/contrib/oidc/auth/internal/OIDCClientConfiguration.java,
-              org/xwiki/contrib/oidc/auth/internal/OIDCUserManager.java,
-              org/xwiki/contrib/oidc/auth/internal/endpoint/CallbackOIDCEndpoint.java,
-              org/xwiki/contrib/oidc/auth/internal/store/OIDCUserClassDocumentInitializer.java,
-              org/xwiki/contrib/oidc/auth/internal/store/OIDCUser.java,
-              org/xwiki/contrib/oidc/auth/internal/store/OIDCUserStore.java,
-          </excludes>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+			<id>kennisfabriek-development</id>
+			<name>Kennisfabriek Repository for Development</name>
+			<url>http://nexus.kennisfabriek.wiki/content/repositories/kennisfabriek-develop</url>
+
+		</snapshotRepository>
+	</distributionManagement>
 </project>

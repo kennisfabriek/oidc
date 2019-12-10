@@ -28,8 +28,9 @@
     <version>8.4-10</version>
   </parent>
 
-  <groupId>org.xwiki.contrib.oidc</groupId>
-  <artifactId>oidc</artifactId>
+	<groupId>wiki.kennisfabriek.auth</groupId>
+	<artifactId>oidc</artifactId>
+
   <name>OpenID Connect</name>
   <version>1.15.2-SNAPSHOT</version>
   <packaging>pom</packaging>
@@ -62,26 +63,43 @@
     <module>oidc-authenticator</module>
   </modules>
 
-  <profiles>
-    <profile>
-      <id>integration-tests</id>
-      <modules>
-        <module>oidc-test</module>
-      </modules>
-    </profile>
-  </profiles>
+
 
   <build>
     <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-release-plugin</artifactId>
-          <configuration>
-            <arguments>-Pintegration-tests -DskipTests=true</arguments>
-          </configuration>
-        </plugin>
-      </plugins>
+<!--      <plugins>-->
+<!--        <plugin>-->
+<!--          <groupId>org.apache.maven.plugins</groupId>-->
+<!--          <artifactId>maven-release-plugin</artifactId>-->
+<!--          <configuration>-->
+<!--            <arguments>-Pintegration-tests -DskipTests=true</arguments>-->
+<!--          </configuration>-->
+<!--        </plugin>-->
+<!--      </plugins>-->
+		<plugins>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.5.1</version>
+
+				<executions>
+					<execution>
+						<id>default-deploy</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>deploy</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<serverId>kennisfabriek-development</serverId>
+					<nexusUrl>http://nexus.kennisfabriek.wiki/content/repositories/kennisfabriek-develop</nexusUrl>
+					<skipStaging>true</skipStaging>
+
+				</configuration>
+
+			</plugin>
+		</plugins>
     </pluginManagement>
   </build>
 
@@ -100,4 +118,5 @@
     <url>https://github.com/xwiki-contrib/oidc/tree/master</url>
     <tag>HEAD</tag>
   </scm>
+
 </project>
