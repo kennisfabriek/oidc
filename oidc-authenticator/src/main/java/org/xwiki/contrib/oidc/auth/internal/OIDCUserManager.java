@@ -327,7 +327,7 @@ public class OIDCUserManager
         // Notify
         this.observation.notify(new OIDCUserUpdating(modifiableDocument.getDocumentReference()), modifiableDocument,
             eventData);
-        
+
         Boolean userUpdated = false;
 
         // Apply the modifications
@@ -568,8 +568,8 @@ public class OIDCUserManager
     {
         XWikiContext xcontext = this.xcontextProvider.get();
 
-        // TODO: add support for subwikis
-        SpaceReference spaceReference = new SpaceReference(xcontext.getMainXWiki(), "XWiki");
+        // Set context in current wiki
+        SpaceReference spaceReference = new SpaceReference(xcontext.getWikiId(), "XWiki");
 
         // Generate default document name
         String documentName = formatXWikiUserName(idToken, userInfo);
