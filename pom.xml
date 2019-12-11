@@ -78,10 +78,8 @@
 <!--      </plugins>-->
 		<plugins>
 			<plugin>
-				<groupId>org.sonatype.plugins</groupId>
-				<artifactId>nexus-staging-maven-plugin</artifactId>
-				<version>1.5.1</version>
-
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.8.1</version>
 				<executions>
 					<execution>
 						<id>default-deploy</id>
@@ -91,18 +89,19 @@
 						</goals>
 					</execution>
 				</executions>
-				<configuration>
-					<serverId>kennisfabriek-development</serverId>
-					<nexusUrl>http://nexus.kennisfabriek.wiki/content/repositories/kennisfabriek-develop</nexusUrl>
-					<skipStaging>true</skipStaging>
-
-				</configuration>
-
 			</plugin>
 		</plugins>
     </pluginManagement>
   </build>
+	<distributionManagement>
+		<snapshotRepository>
 
+			<id>kennisfabriek-development</id>
+			<name>Kennisfabriek Repository for Development</name>
+			<url>http://nexus.kennisfabriek.wiki/content/repositories/kennisfabriek-develop</url>
+
+		</snapshotRepository>
+	</distributionManagement>
   <developers>
     <developer>
       <id>tmortagne</id>
@@ -110,12 +109,16 @@
       <email>thomas.mortagne at xwiki.com</email>
       <timezone>+1</timezone>
     </developer>
+	  <developer>
+		  <id>maartenvanderschot</id>
+		  <name>Maarten van der Schot</name>
+	  </developer>
   </developers>
 
   <scm>
-    <connection>scm:git:git://github.com/xwiki-contrib/oidc.git</connection>
-    <developerConnection>scm:git:git@github.com:xwiki-contrib/oidc.git</developerConnection>
-    <url>https://github.com/xwiki-contrib/oidc/tree/master</url>
+    <connection>scm:git:git@github.com:kennisfabriek/oidc.git</connection>
+    <developerConnection>scm:git:git@github.com:kennisfabriek/oidc.git</developerConnection>
+    <url>https://github.com/kennisfabriek/oidc/tree/master</url>
     <tag>HEAD</tag>
   </scm>
 
