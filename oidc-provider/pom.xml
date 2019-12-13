@@ -57,7 +57,7 @@
       <version>${platform.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.xwiki.contrib.oidc</groupId>
+      <groupId>wiki.kennisfabriek.auth</groupId>
       <artifactId>oidc-api</artifactId>
       <version>${project.version}</version>
     </dependency>

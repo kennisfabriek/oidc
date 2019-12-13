@@ -40,7 +40,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
  * Helper to manager OpenID Connect profiles XClass and XObject.
- * 
+ *
  * @version $Id: c68c46c340eb3dd4988644e71d45541e9c1f25eb $
  */
 @Component(roles = OIDCUserStore.class)

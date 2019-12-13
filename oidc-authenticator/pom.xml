@@ -60,7 +60,7 @@
       <artifactId>oauth2-oidc-sdk</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.xwiki.contrib.oidc</groupId>
+      <groupId>wiki.kennisfabriek.auth</groupId>
       <artifactId>oidc-provider</artifactId>
       <version>${project.version}</version>
     </dependency>
