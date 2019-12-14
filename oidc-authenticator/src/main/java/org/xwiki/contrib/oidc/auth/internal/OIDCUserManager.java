@@ -63,6 +63,7 @@ import org.xwiki.contrib.oidc.event.OIDCUserUpdating;
 import org.xwiki.contrib.oidc.provider.internal.OIDCException;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.SpaceReference;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.query.QueryException;
 
@@ -283,10 +284,13 @@ public class OIDCUserManager
 		this.logger.debug("Is dit een MainWiki ---------->>>>>>>>> " + xcontext.isMainWiki());
 		this.logger.debug("Request: " + request.getServerName());
 
+		WikiReference wikiRef = new WikiReference("wiki360sso");
+		DocumentReference docRef = xcontext.getWiki().getUserClass(xcontext).getDocumentReference();
+		docRef.setWikiReference(wikiRef);
 
-		DocumentReference docRef = new DocumentReference("wiki360sso",
-				"Xwiki",
-				userDocument.getPageName());
+//		DocumentReference docRef = new DocumentReference("wiki360sso",
+//				"Xwiki",
+//				userDocument.getPageName());
 
 
 		this.logger.debug("Docref gemaakt in wiki: " + userDocument.getWikiName());
