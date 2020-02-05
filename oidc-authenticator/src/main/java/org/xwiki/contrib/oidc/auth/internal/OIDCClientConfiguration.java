@@ -32,11 +32,13 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDateTime;
+import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.container.Container;
@@ -63,10 +65,12 @@ import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import com.nimbusds.openid.connect.sdk.ClaimsRequest;
 import com.nimbusds.openid.connect.sdk.OIDCScopeValue;
 import com.nimbusds.openid.connect.sdk.claims.IDTokenClaimsSet;
+import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.web.XWikiRequest;
 
 /**
  * Various OpenID Connect authenticator configurations.
- * 
+ *
  * @version $Id$
  */
 @Component(roles = OIDCClientConfiguration.class)
@@ -185,6 +189,8 @@ public class OIDCClientConfiguration extends OIDCConfiguration
 
     private static final String XWIKI_GROUP_PREFIX = "XWiki.";
 
+    private static String CONFIG_PREFIX = "";
+
     @Inject
     private InstanceIdManager instance;
 
@@ -200,6 +206,31 @@ public class OIDCClientConfiguration extends OIDCConfiguration
     @Inject
     // TODO: store configuration in custom objects
     private ConfigurationSource configuration;
+
+	@Inject
+	private Provider<XWikiContext> xcontextProvider;
+
+	@Inject
+	private Logger logger;
+
+    public OIDCClientConfiguration()
+	{
+		// Set config prefix
+
+		// Lookup request
+		XWikiContext xcontext = this.xcontextProvider.get();
+		XWikiRequest request = xcontext.getRequest();
+
+		// Set wikiref
+		if(request.getServerName() == "twente.omgevingsdienst.wiki")
+		{
+			this.logger.debug("Setting wikiref to wiki360sso");
+			CONFIG_PREFIX = "od360twente.";
+		}
+
+
+	}
+
 
     private HttpSession getHttpSession()
     {
@@ -319,12 +350,12 @@ public class OIDCClientConfiguration extends OIDCConfiguration
 
     public URL getXWikiProvider()
     {
-        return getProperty(PROP_XWIKIPROVIDER, URL.class);
+        return getProperty(CONFIG_PREFIX + PROP_XWIKIPROVIDER, URL.class);
     }
 
     private URI getEndPoint(String hint) throws URISyntaxException, MalformedURLException
     {
-        URL endpoint = getProperty(PROPPREFIX_ENDPOINT + hint, URL.class);
+        URL endpoint = getProperty(CONFIG_PREFIX + PROPPREFIX_ENDPOINT + hint, URL.class);
 
         // If no direct endpoint is provider assume it's a XWiki OIDC provider and generate the endpoint from the hint
         if (endpoint == null) {

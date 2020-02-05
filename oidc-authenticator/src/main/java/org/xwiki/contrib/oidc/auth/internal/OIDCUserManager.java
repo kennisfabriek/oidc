@@ -124,6 +124,8 @@ public class OIDCUserManager
 
     private static final String XWIKI_GROUP_PREFIX = "XWiki.";
 
+    private String wikiRef = "xwiki";
+
     public void updateUserInfoAsync() throws MalformedURLException, URISyntaxException
     {
         final URI userInfoEndpoint = this.configuration.getUserInfoOIDCEndpoint();
@@ -262,19 +264,11 @@ public class OIDCUserManager
         // Lookup request
         XWikiRequest request = xcontext.getRequest();
 
-        // Set subwiki
-//		XWikiContext xcontext = new XWikiContext();
-//		xcontext.setMainXWiki("wiki360sso");
-//		xcontext.setWikiId("wiki360sso");
-//		xcontext.getWiki();
-
+        // Set wikiref
         if(request.getServerName() == "wiki360sso.codeforce.nl")
 		{
-			// Force context:
-
-//			xcontext.setWikiId("wiki360sso");
-//			xcontext.getWiki();
-
+			this.logger.debug("Setting wikiref to wiki360sso");
+			this.wikiRef = "wiki360sso";
 		}
 
 
@@ -284,25 +278,14 @@ public class OIDCUserManager
 		this.logger.debug("Is dit een MainWiki ---------->>>>>>>>> " + xcontext.isMainWiki());
 		this.logger.debug("Request: " + request.getServerName());
 
-		WikiReference wikiRef = new WikiReference("wiki360sso");
+		WikiReference wikiRef = new WikiReference(this.wikiRef);
 		DocumentReference docRef = xcontext.getWiki().getUserClass(xcontext).getDocumentReference();
 		docRef.setWikiReference(wikiRef);
 
-//		DocumentReference docRef = new DocumentReference("wiki360sso",
-//				"Xwiki",
-//				userDocument.getPageName());
-
-
-		this.logger.debug("Docref gemaakt in wiki: " + userDocument.getWikiName());
-		this.logger.debug("Docref paginanaam: " + userDocument.getPageName());
 
 		// Set user fields
         BaseObject userObject = modifiableDocument
             .getXObject(docRef, true, xcontext);
-
-        // Set correct wiki on user
-		//userObject.
-
 
         // Make sure the user is active by default
         userObject.set("active", 1, xcontext);
@@ -391,7 +374,7 @@ public class OIDCUserManager
                 comment = "Update user from OpenID Connect";
             }
 
-			xcontext.setWikiId("wiki360sso");
+			xcontext.setWikiId(this.wikiRef);
             xcontext.getWiki().saveDocument(userDocument, comment, xcontext);
 
             // Now let's add the new user to XWiki.XWikiAllGroup
@@ -623,7 +606,7 @@ public class OIDCUserManager
         XWikiContext xcontext = this.xcontextProvider.get();
 
         // Set context in current wiki
-        SpaceReference spaceReference = new SpaceReference("wiki360sso", "XWiki");
+        SpaceReference spaceReference = new SpaceReference(this.wikiRef, "XWiki");
 
         // Generate default document name
         String documentName = formatXWikiUserName(idToken, userInfo);
