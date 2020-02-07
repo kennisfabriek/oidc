@@ -213,7 +213,7 @@ public class OIDCClientConfiguration extends OIDCConfiguration
 	@Inject
 	private Logger logger;
 
-    public OIDCClientConfiguration()
+    private String getPrefix()
 	{
 		// Set config prefix
 
@@ -228,6 +228,7 @@ public class OIDCClientConfiguration extends OIDCConfiguration
 			CONFIG_PREFIX = "od360twente.";
 		}
 
+		return CONFIG_PREFIX;
 
 	}
 
@@ -350,12 +351,12 @@ public class OIDCClientConfiguration extends OIDCConfiguration
 
     public URL getXWikiProvider()
     {
-        return getProperty(CONFIG_PREFIX + PROP_XWIKIPROVIDER, URL.class);
+        return getProperty(getPrefix() + PROP_XWIKIPROVIDER, URL.class);
     }
 
     private URI getEndPoint(String hint) throws URISyntaxException, MalformedURLException
     {
-        URL endpoint = getProperty(CONFIG_PREFIX + PROPPREFIX_ENDPOINT + hint, URL.class);
+        URL endpoint = getProperty(getPrefix() + PROPPREFIX_ENDPOINT + hint, URL.class);
 
         // If no direct endpoint is provider assume it's a XWiki OIDC provider and generate the endpoint from the hint
         if (endpoint == null) {
