@@ -27,9 +27,11 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
@@ -37,6 +39,7 @@ import org.xwiki.query.QueryManager;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
+import org.slf4j.Logger;
 
 /**
  * Helper to manager OpenID Connect profiles XClass and XObject.
@@ -52,6 +55,9 @@ public class OIDCUserStore
 
     @Inject
     private Provider<XWikiContext> xcontextProvider;
+
+	@Inject
+	private Logger logger;
 
     @Inject
     @Named("current")
@@ -86,20 +92,50 @@ public class OIDCUserStore
         query.bindValue("issuer", issuer);
         query.bindValue("subject", subject);
 
+        logger.debug("query zoeken user: " + query);
+
+        query.setWiki("od360twente");
+
         List<String> documents = query.execute();
 
         if (documents.isEmpty()) {
+			logger.debug("documents is empty");
             return null;
         }
+		logger.debug("documents is NOT empty");
 
         // TODO: throw exception when there is several ?
 
         XWikiContext xcontext = this.xcontextProvider.get();
 
         DocumentReference userReference = this.resolver.resolve(documents.get(0));
-        XWikiDocument userDocument = xcontext.getWiki().getDocument(userReference, xcontext);
+		logger.debug("userReference voor het seten van wikiref: " + userReference.getName());
+
+
+		WikiReference myWikiRef = new WikiReference("od360twente");
+
+		// @todo: dit wordt niet opgeslagen
+		userReference.setWikiReference(myWikiRef);
+
+		DocumentReference useRef2 = userReference.setWikiReference(myWikiRef);
+
+		logger.debug("userReference: " + userReference.getName());
+
+		logger.debug("userReference wiki: " + userReference.getWikiReference());
+
+		logger.debug("userReference name 2: " + useRef2.getName());
+		logger.debug("userReference wiki 2: " + useRef2.getWikiReference());
+
+		xcontext.setWikiId("od360twente");
+		XWikiDocument userDocument = xcontext.getWiki().getDocument(useRef2, xcontext);
+
+
+		logger.debug("Userdocument getWikiName: " + userDocument.getWikiName());
+		logger.debug("Userdocument getDocumentReference: " + userDocument.getDocumentReference());
+		logger.debug("Wikireference: " + userReference.getWikiReference());
 
         if (userDocument.isNew()) {
+			logger.debug("userDocument is NEW");
             return null;
         }
 

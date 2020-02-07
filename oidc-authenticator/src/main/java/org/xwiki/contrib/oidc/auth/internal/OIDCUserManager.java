@@ -124,7 +124,7 @@ public class OIDCUserManager
 
     private static final String XWIKI_GROUP_PREFIX = "XWiki.";
 
-    private String wikiRef = "xwiki";
+    private String wikiRef = "od360twente";
 
     public void updateUserInfoAsync() throws MalformedURLException, URISyntaxException
     {
@@ -240,7 +240,11 @@ public class OIDCUserManager
 
         String formattedSubject = formatSubjec(idToken, userInfo);
 
-        XWikiDocument userDocument = this.store.searchDocument(idToken.getIssuer().getValue(), formattedSubject);
+        this.logger.debug("idToken issuer: " + idToken.getIssuer().getValue());
+		this.logger.debug("userInfo name: " + userInfo.getName());
+		this.logger.debug("formattedSubject: " + formattedSubject);
+
+		XWikiDocument userDocument = this.store.searchDocument(idToken.getIssuer().getValue(), formattedSubject);
 
         XWikiDocument modifiableDocument;
         boolean newUser;
@@ -271,6 +275,8 @@ public class OIDCUserManager
 			this.wikiRef = "wiki360sso";
 		}
 
+		this.wikiRef = "od360twente";
+        this.logger.debug("Wikiref geset naar: " + this.wikiRef);
 
 		this.logger.debug("Hallo Maarten dit is de wikiId ---------->>>>>>>>> " + xcontext.getWikiId());
 		this.logger.debug("Hallo Maarten dit is de wiki ---------->>>>>>>>> " + xcontext.getWiki());
@@ -278,10 +284,11 @@ public class OIDCUserManager
 		this.logger.debug("Is dit een MainWiki ---------->>>>>>>>> " + xcontext.isMainWiki());
 		this.logger.debug("Request: " + request.getServerName());
 
-		WikiReference wikiRef = new WikiReference(this.wikiRef);
+		WikiReference myWikiRef = new WikiReference(this.wikiRef);
 		DocumentReference docRef = xcontext.getWiki().getUserClass(xcontext).getDocumentReference();
-		docRef.setWikiReference(wikiRef);
+		docRef.setWikiReference(myWikiRef);
 
+		this.logger.debug("DocumentRef of user: " + docRef.getWikiReference().toString());
 
 		// Set user fields
         BaseObject userObject = modifiableDocument
@@ -606,7 +613,8 @@ public class OIDCUserManager
         XWikiContext xcontext = this.xcontextProvider.get();
 
         // Set context in current wiki
-        SpaceReference spaceReference = new SpaceReference(this.wikiRef, "XWiki");
+		this.logger.debug("getNewUserDocument in wiki ref: " + this.wikiRef);
+        SpaceReference spaceReference = new SpaceReference("od360twente", "XWiki");
 
         // Generate default document name
         String documentName = formatXWikiUserName(idToken, userInfo);

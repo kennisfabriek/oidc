@@ -25,7 +25,7 @@
   <parent>
     <groupId>wiki.kennisfabriek.auth</groupId>
     <artifactId>oidc</artifactId>
-    <version>1.15.3-SNAPSHOT</version>
+    <version>1.15.18-SNAPSHOT</version>
   </parent>
 
   <artifactId>oidc-provider</artifactId>
