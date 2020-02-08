@@ -29,6 +29,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.contrib.oidc.auth.internal.OIDCClientConfiguration;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.WikiReference;
@@ -59,12 +60,19 @@ public class OIDCUserStore
 	@Inject
 	private Logger logger;
 
-    @Inject
+	@Inject
+	private OIDCClientConfiguration configuration;
+
+	private String wikiRef = "od360twente";
+
+	@Inject
     @Named("current")
     private DocumentReferenceResolver<String> resolver;
 
     public boolean updateOIDCUser(XWikiDocument userDocument, String issuer, String subject)
     {
+
+
 		this.logger.debug("Start updating OIDC user: {}" , userDocument.getDocumentReference().toString());
 
 
@@ -108,7 +116,7 @@ public class OIDCUserStore
 
         logger.debug("query zoeken user: " + query);
 
-        query.setWiki("od360twente");
+        query.setWiki(this.wikiRef);
 
         List<String> documents = query.execute();
 
@@ -126,7 +134,7 @@ public class OIDCUserStore
 		logger.debug("userReference voor het seten van wikiref: " + userReference.getName());
 
 
-		WikiReference myWikiRef = new WikiReference("od360twente");
+		WikiReference myWikiRef = new WikiReference(this.wikiRef);
 
 
 		userReference.setWikiReference(myWikiRef);
@@ -140,7 +148,7 @@ public class OIDCUserStore
 		logger.debug("userReference name 2: " + useRef2.getName());
 		logger.debug("userReference wiki 2: " + useRef2.getWikiReference());
 
-			xcontext.setWikiId("od360twente");
+		xcontext.setWikiId(this.wikiRef);
 		XWikiDocument userDocument = xcontext.getWiki().getDocument(useRef2, xcontext);
 
 

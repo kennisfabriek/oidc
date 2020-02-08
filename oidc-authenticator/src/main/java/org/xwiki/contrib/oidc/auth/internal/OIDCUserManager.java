@@ -125,7 +125,7 @@ public class OIDCUserManager
 
     private static final String XWIKI_GROUP_PREFIX = "XWiki.";
 
-    private String wikiRef = "od360twente";
+	private String wikiRef = "od360twente";
 
     public void updateUserInfoAsync() throws MalformedURLException, URISyntaxException
     {
@@ -239,6 +239,9 @@ public class OIDCUserManager
 		XWikiContext xcontext = this.xcontextProvider.get();
 
 
+		this.logger.debug("ConfigurationPrefix: " + this.configuration.getPrefix());
+
+
 		// Check allowed/forbidden groups
         checkAllowedGroups(userInfo);
 
@@ -260,17 +263,13 @@ public class OIDCUserManager
         if (userDocument == null) {
 
         	// Check for existing user document (JurjenRoels)
-			XWikiDocument existingUser = xcontext.getWiki().getDocument("od360twente:Xwiki.JurjenRoels", xcontext);
+			XWikiDocument existingUser = xcontext.getWiki().getDocument(this.wikiRef + ":" + XWIKI_GROUP_PREFIX + userInfo.getPreferredUsername(), xcontext);
 
         	// if true
 			if(existingUser != null)
 			{
 				this.logger.debug("Existing user found: " + existingUser.getDocumentReference().toString());
 
-				// Set OIDC class manualy to userdocument
-//				OIDCUserClassDocumentInitializer init = new OIDCUserClassDocumentInitializer();
-//				Boolean updateExisting = init.updateDocument(existingUser);
-//				this.logger.debug("OIDC class toegevoegd updateresultaat: " + updateExisting);
 				modifiableDocument = existingUser;
 				userDocument = existingUser;
 				newUser = false;
@@ -300,14 +299,7 @@ public class OIDCUserManager
         // Lookup request
         XWikiRequest request = xcontext.getRequest();
 
-        // Set wikiref
-        if(request.getServerName() == "wiki360sso.codeforce.nl")
-		{
-			this.logger.debug("Setting wikiref to wiki360sso");
-			this.wikiRef = "wiki360sso";
-		}
 
-		this.wikiRef = "od360twente";
         this.logger.debug("Wikiref geset naar: " + this.wikiRef);
 
 		this.logger.debug("Hallo Maarten dit is de wikiId ---------->>>>>>>>> " + xcontext.getWikiId());
@@ -316,9 +308,7 @@ public class OIDCUserManager
 		this.logger.debug("Is dit een MainWiki ---------->>>>>>>>> " + xcontext.isMainWiki());
 		this.logger.debug("Request: " + request.getServerName());
 
-		WikiReference myWikiRef = new WikiReference("od360twente");
-
-
+		WikiReference myWikiRef = new WikiReference(this.wikiRef);
 
 		DocumentReference docRef = xcontext.getWiki().getUserClass(xcontext).getDocumentReference();
 		DocumentReference useRef2 = docRef.setWikiReference(myWikiRef);
@@ -426,7 +416,7 @@ public class OIDCUserManager
                 comment = "Update user from OpenID Connect";
             }
 
-			xcontext.setWikiId("od360twente");
+			xcontext.setWikiId(this.wikiRef);
             xcontext.getWiki().saveDocument(userDocument, comment, xcontext);
 
             // Now let's add the new user to XWiki.XWikiAllGroup
@@ -672,7 +662,7 @@ public class OIDCUserManager
 
         // Set context in current wiki
 		this.logger.debug("getNewUserDocument in wiki ref: " + this.wikiRef);
-        SpaceReference spaceReference = new SpaceReference("od360twente", "XWiki");
+        SpaceReference spaceReference = new SpaceReference(this.wikiRef, "XWiki");
 
         // Generate default document name
         String documentName = formatXWikiUserName(idToken, userInfo);

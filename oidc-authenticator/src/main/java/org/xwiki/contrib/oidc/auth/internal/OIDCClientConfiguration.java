@@ -189,8 +189,6 @@ public class OIDCClientConfiguration extends OIDCConfiguration
 
     private static final String XWIKI_GROUP_PREFIX = "XWiki.";
 
-    private static String CONFIG_PREFIX = "";
-
     @Inject
     private InstanceIdManager instance;
 
@@ -213,7 +211,7 @@ public class OIDCClientConfiguration extends OIDCConfiguration
 	@Inject
 	private Logger logger;
 
-    private String getPrefix()
+    public String getPrefix()
 	{
 		// Set config prefix
 
@@ -221,16 +219,26 @@ public class OIDCClientConfiguration extends OIDCConfiguration
 		XWikiContext xcontext = this.xcontextProvider.get();
 		XWikiRequest request = xcontext.getRequest();
 
-		// Set wikiref
-		if(request.getServerName() == "twente.omgevingsdienst.wiki")
+		String host = request.getServerName();
+
+		this.logger.debug("Setting prefix for host: " + host);
+
+
+		if(host.equals("twente.omgevingsdienst.wiki"))
 		{
-			this.logger.debug("Setting wikiref to wiki360sso");
-			CONFIG_PREFIX = "od360twente.";
+			this.logger.debug("Setting wikiref to od360twente");
+			return "od360twente.";
 		}
 
-		return CONFIG_PREFIX;
+		return "";
 
 	}
+
+	public String getSubWikiId()
+	{
+		return "od360twente";
+	}
+
 
 
     private HttpSession getHttpSession()
