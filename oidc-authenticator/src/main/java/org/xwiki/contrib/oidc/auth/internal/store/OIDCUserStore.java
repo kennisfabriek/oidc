@@ -114,7 +114,7 @@ public class OIDCUserStore
 
 		WikiReference myWikiRef = new WikiReference("od360twente");
 
-		// @todo: dit wordt niet opgeslagen
+
 		userReference.setWikiReference(myWikiRef);
 
 		DocumentReference useRef2 = userReference.setWikiReference(myWikiRef);
@@ -126,7 +126,7 @@ public class OIDCUserStore
 		logger.debug("userReference name 2: " + useRef2.getName());
 		logger.debug("userReference wiki 2: " + useRef2.getWikiReference());
 
-		xcontext.setWikiId("od360twente");
+			xcontext.setWikiId("od360twente");
 		XWikiDocument userDocument = xcontext.getWiki().getDocument(useRef2, xcontext);
 
 

@@ -56,6 +56,7 @@ import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.concurrent.ExecutionContextRunnable;
 import org.xwiki.contrib.oidc.OIDCUserInfo;
 import org.xwiki.contrib.oidc.auth.internal.OIDCClientConfiguration.GroupMapping;
+import org.xwiki.contrib.oidc.auth.internal.store.OIDCUserClassDocumentInitializer;
 import org.xwiki.contrib.oidc.auth.internal.store.OIDCUserStore;
 import org.xwiki.contrib.oidc.event.OIDCUserEventData;
 import org.xwiki.contrib.oidc.event.OIDCUserUpdated;
@@ -235,33 +236,63 @@ public class OIDCUserManager
     public Principal updateUser(IDTokenClaimsSet idToken, UserInfo userInfo)
         throws XWikiException, QueryException, OIDCException
     {
-        // Check allowed/forbidden groups
+		XWikiContext xcontext = this.xcontextProvider.get();
+
+
+		// Check allowed/forbidden groups
         checkAllowedGroups(userInfo);
 
         String formattedSubject = formatSubjec(idToken, userInfo);
+
+        this.logger.debug("Username: " + userInfo.getPreferredUsername());
 
         this.logger.debug("idToken issuer: " + idToken.getIssuer().getValue());
 		this.logger.debug("userInfo name: " + userInfo.getName());
 		this.logger.debug("formattedSubject: " + formattedSubject);
 
+
+
+		// Zoeken met OIDC class
 		XWikiDocument userDocument = this.store.searchDocument(idToken.getIssuer().getValue(), formattedSubject);
 
         XWikiDocument modifiableDocument;
         boolean newUser;
         if (userDocument == null) {
-            userDocument = getNewUserDocument(idToken, userInfo);
 
-            newUser = true;
-            modifiableDocument = userDocument;
+        	// Check for existing user document (JurjenRoels)
+			XWikiDocument existingUser = xcontext.getWiki().getDocument("od360twente:Xwiki.JurjenRoels", xcontext);
+
+        	// if true
+			if(existingUser != null)
+			{
+				this.logger.debug("Existing user found: " + existingUser.getDocumentReference().toString());
+
+				// Set OIDC class manualy to userdocument
+				OIDCUserClassDocumentInitializer init = new OIDCUserClassDocumentInitializer();
+				Boolean updateExisting = init.updateDocument(existingUser);
+				this.logger.debug("OIDC class toegevoegd updateresultaat: " + updateExisting);
+				modifiableDocument = existingUser;
+				newUser = false;
+				modifiableDocument = modifiableDocument.clone();
+
+			} else {
+
+				this.logger.debug("Existing user NOT found - Creating new userDocument");
+				userDocument = getNewUserDocument(idToken, userInfo);
+
+				newUser = true;
+				modifiableDocument = userDocument;
+			}
+
+
         } else {
             // Don't change the document author to not change document execution right
-
+			this.logger.debug("User found WITH oidc class");
             newUser = false;
             modifiableDocument = userDocument.clone();
         }
 
 
-		XWikiContext xcontext = this.xcontextProvider.get();
 
 		// Todo/wip: Set the correct context to save the new user in
 
@@ -284,9 +315,13 @@ public class OIDCUserManager
 		this.logger.debug("Is dit een MainWiki ---------->>>>>>>>> " + xcontext.isMainWiki());
 		this.logger.debug("Request: " + request.getServerName());
 
-		WikiReference myWikiRef = new WikiReference(this.wikiRef);
+		WikiReference myWikiRef = new WikiReference("od360twente");
+
+
+
 		DocumentReference docRef = xcontext.getWiki().getUserClass(xcontext).getDocumentReference();
-		docRef.setWikiReference(myWikiRef);
+		DocumentReference useRef2 = docRef.setWikiReference(myWikiRef);
+		docRef = useRef2;
 
 		this.logger.debug("DocumentRef of user: " + docRef.getWikiReference().toString());
 
@@ -574,20 +609,30 @@ public class OIDCUserManager
     {
         this.logger.debug("Updating XWiki claims");
         for (Map.Entry<String, Object> entry : userInfo.toJSONObject().entrySet()) {
+
+        	this.logger.debug("Start in loop");
+
             if (entry.getKey().startsWith(OIDCUserInfo.CLAIMPREFIX_XWIKI_USER)) {
+
+            	this.logger.debug("In entry: " + entry.getKey().startsWith(OIDCUserInfo.CLAIMPREFIX_XWIKI_USER));
+
                 String xwikiKey = entry.getKey().substring(OIDCUserInfo.CLAIMPREFIX_XWIKI_USER.length());
+
+                this.logger.debug("XwikiKey: " + xwikiKey);
 
                 // Try in the user object
                 if (userClass.getField(xwikiKey) != null) {
                     setValue(userObject, xwikiKey, entry.getValue(), xcontext);
-
+					this.logger.debug("Key geset in user object");
                     continue;
                 }
 
                 // Try in the whole user document
                 BaseObject xobject = userDocument.getFirstObject(xwikiKey);
                 if (xobject != null) {
+
                     setValue(xobject, xwikiKey, entry.getValue(), xcontext);
+					this.logger.debug("Key geset in user document");
                 }
             }
         }
@@ -623,7 +668,16 @@ public class OIDCUserManager
         DocumentReference reference = new DocumentReference(documentName, spaceReference);
         XWikiDocument document = xcontext.getWiki().getDocument(reference, xcontext);
         for (int index = 0; !document.isNew(); ++index) {
-            reference = new DocumentReference(documentName + '-' + index, spaceReference);
+			String postfix;
+        	if(index > 0)
+			{
+				postfix = String.format("-{0}", index);
+			} else {
+				postfix = String.format("");
+			}
+
+
+            reference = new DocumentReference(documentName + postfix, spaceReference);
 
             document = xcontext.getWiki().getDocument(reference, xcontext);
         }
