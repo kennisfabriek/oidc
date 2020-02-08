@@ -63,7 +63,7 @@ public class OIDCUserStore
 	@Inject
 	private OIDCClientConfiguration configuration;
 
-	private String wikiRef = "od360twente";
+	private String wikiRef;
 
 	@Inject
     @Named("current")
@@ -71,6 +71,7 @@ public class OIDCUserStore
 
     public boolean updateOIDCUser(XWikiDocument userDocument, String issuer, String subject)
     {
+		this.wikiRef = configuration.getSubWikiId();
 
 
 		this.logger.debug("Start updating OIDC user: {}" , userDocument.getDocumentReference().toString());
@@ -108,14 +109,13 @@ public class OIDCUserStore
 
     public XWikiDocument searchDocument(String issuer, String subject) throws XWikiException, QueryException
     {
-        Query query = this.queries.createQuery("from doc.object(" + OIDCUser.CLASS_FULLNAME
+		this.wikiRef = configuration.getSubWikiId();
+
+		Query query = this.queries.createQuery("from doc.object(" + OIDCUser.CLASS_FULLNAME
             + ") as oidc where oidc.issuer = :issuer and oidc.subject = :subject", Query.XWQL);
 
         query.bindValue("issuer", issuer);
         query.bindValue("subject", subject);
-
-        logger.debug("query zoeken user: " + query);
-
         query.setWiki(this.wikiRef);
 
         List<String> documents = query.execute();
@@ -131,30 +131,15 @@ public class OIDCUserStore
         XWikiContext xcontext = this.xcontextProvider.get();
 
         DocumentReference userReference = this.resolver.resolve(documents.get(0));
-		logger.debug("userReference voor het seten van wikiref: " + userReference.getName());
-
 
 		WikiReference myWikiRef = new WikiReference(this.wikiRef);
-
 
 		userReference.setWikiReference(myWikiRef);
 
 		DocumentReference useRef2 = userReference.setWikiReference(myWikiRef);
 
-		logger.debug("userReference: " + userReference.getName());
-
-		logger.debug("userReference wiki: " + userReference.getWikiReference());
-
-		logger.debug("userReference name 2: " + useRef2.getName());
-		logger.debug("userReference wiki 2: " + useRef2.getWikiReference());
-
 		xcontext.setWikiId(this.wikiRef);
 		XWikiDocument userDocument = xcontext.getWiki().getDocument(useRef2, xcontext);
-
-
-		logger.debug("Userdocument getWikiName: " + userDocument.getWikiName());
-		logger.debug("Userdocument getDocumentReference: " + userDocument.getDocumentReference());
-		logger.debug("Wikireference: " + userReference.getWikiReference());
 
         if (userDocument.isNew()) {
 			logger.debug("userDocument is NEW");

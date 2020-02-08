@@ -125,7 +125,7 @@ public class OIDCUserManager
 
     private static final String XWIKI_GROUP_PREFIX = "XWiki.";
 
-	private String wikiRef = "od360twente";
+	private String wikiRef;
 
     public void updateUserInfoAsync() throws MalformedURLException, URISyntaxException
     {
@@ -238,6 +238,7 @@ public class OIDCUserManager
     {
 		XWikiContext xcontext = this.xcontextProvider.get();
 
+		this.wikiRef = configuration.getSubWikiId();
 
 		this.logger.debug("ConfigurationPrefix: " + this.configuration.getPrefix());
 
@@ -262,7 +263,7 @@ public class OIDCUserManager
         boolean newUser;
         if (userDocument == null) {
 
-        	// Check for existing user document (JurjenRoels)
+        	// Check for existing user document
 			XWikiDocument existingUser = xcontext.getWiki().getDocument(this.wikiRef + ":" + XWIKI_GROUP_PREFIX + userInfo.getPreferredUsername(), xcontext);
 
         	// if true
@@ -298,15 +299,6 @@ public class OIDCUserManager
 
         // Lookup request
         XWikiRequest request = xcontext.getRequest();
-
-
-        this.logger.debug("Wikiref geset naar: " + this.wikiRef);
-
-		this.logger.debug("Hallo Maarten dit is de wikiId ---------->>>>>>>>> " + xcontext.getWikiId());
-		this.logger.debug("Hallo Maarten dit is de wiki ---------->>>>>>>>> " + xcontext.getWiki());
-		this.logger.debug("Hallo Maarten dit is Reference---------->>>>>>>>> " + xcontext.getWikiReference());
-		this.logger.debug("Is dit een MainWiki ---------->>>>>>>>> " + xcontext.isMainWiki());
-		this.logger.debug("Request: " + request.getServerName());
 
 		WikiReference myWikiRef = new WikiReference(this.wikiRef);
 
@@ -384,11 +376,9 @@ public class OIDCUserManager
         // XWiki claims
 		this.logger.debug("Updating claims: {}" , modifiableDocument.getDocumentReference().toString());
         updateXWikiClaims(modifiableDocument, userObject.getXClass(xcontext), userObject, userInfo, xcontext);
-		this.logger.debug("Done Updating claims: {}" , modifiableDocument.getDocumentReference().toString());
 
         // Set OIDC fields
         this.store.updateOIDCUser(modifiableDocument, idToken.getIssuer().getValue(), formattedSubject);
-		this.logger.debug("Done updateOIDCUser");
 
         // Data to send with the event
         OIDCUserEventData eventData =
@@ -660,7 +650,10 @@ public class OIDCUserManager
     {
         XWikiContext xcontext = this.xcontextProvider.get();
 
-        // Set context in current wiki
+		this.wikiRef = configuration.getSubWikiId();
+
+
+		// Set context in current wiki
 		this.logger.debug("getNewUserDocument in wiki ref: " + this.wikiRef);
         SpaceReference spaceReference = new SpaceReference(this.wikiRef, "XWiki");
 

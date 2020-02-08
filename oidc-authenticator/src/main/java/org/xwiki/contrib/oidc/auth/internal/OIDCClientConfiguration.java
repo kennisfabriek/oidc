@@ -211,7 +211,7 @@ public class OIDCClientConfiguration extends OIDCConfiguration
 	@Inject
 	private Logger logger;
 
-    public String getPrefix()
+    public String getHost()
 	{
 		// Set config prefix
 
@@ -221,24 +221,25 @@ public class OIDCClientConfiguration extends OIDCConfiguration
 
 		String host = request.getServerName();
 
-		this.logger.debug("Setting prefix for host: " + host);
+		this.logger.debug("Config hostname: " + host);
 
-
-		if(host.equals("twente.omgevingsdienst.wiki"))
-		{
-			this.logger.debug("Setting wikiref to od360twente");
-			return "od360twente.";
-		}
-
-		return "";
+		return host;
 
 	}
 
 	public String getSubWikiId()
 	{
-		return "od360twente";
+
+		String subwikiid = configuration.getProperty(getHost() + ".oidc.subwiki", String.class);
+		this.logger.debug("SubwikiID in config class: " + subwikiid);
+		return subwikiid;
 	}
 
+	public String getPrefix()
+	{
+		//return "";
+		return getHost() + ".";
+	}
 
 
     private HttpSession getHttpSession()
@@ -365,6 +366,8 @@ public class OIDCClientConfiguration extends OIDCConfiguration
     private URI getEndPoint(String hint) throws URISyntaxException, MalformedURLException
     {
         URL endpoint = getProperty(getPrefix() + PROPPREFIX_ENDPOINT + hint, URL.class);
+
+        this.logger.debug("OIDC Custom endpoint: " + endpoint);
 
         // If no direct endpoint is provider assume it's a XWiki OIDC provider and generate the endpoint from the hint
         if (endpoint == null) {
