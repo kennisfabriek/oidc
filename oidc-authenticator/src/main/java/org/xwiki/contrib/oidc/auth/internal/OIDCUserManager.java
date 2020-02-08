@@ -268,10 +268,11 @@ public class OIDCUserManager
 				this.logger.debug("Existing user found: " + existingUser.getDocumentReference().toString());
 
 				// Set OIDC class manualy to userdocument
-				OIDCUserClassDocumentInitializer init = new OIDCUserClassDocumentInitializer();
-				Boolean updateExisting = init.updateDocument(existingUser);
-				this.logger.debug("OIDC class toegevoegd updateresultaat: " + updateExisting);
+//				OIDCUserClassDocumentInitializer init = new OIDCUserClassDocumentInitializer();
+//				Boolean updateExisting = init.updateDocument(existingUser);
+//				this.logger.debug("OIDC class toegevoegd updateresultaat: " + updateExisting);
 				modifiableDocument = existingUser;
+				userDocument = existingUser;
 				newUser = false;
 				modifiableDocument = modifiableDocument.clone();
 
@@ -393,22 +394,31 @@ public class OIDCUserManager
         // XWiki claims
 		this.logger.debug("Updating claims: {}" , modifiableDocument.getDocumentReference().toString());
         updateXWikiClaims(modifiableDocument, userObject.getXClass(xcontext), userObject, userInfo, xcontext);
+		this.logger.debug("Done Updating claims: {}" , modifiableDocument.getDocumentReference().toString());
 
         // Set OIDC fields
         this.store.updateOIDCUser(modifiableDocument, idToken.getIssuer().getValue(), formattedSubject);
+		this.logger.debug("Done updateOIDCUser");
 
         // Data to send with the event
         OIDCUserEventData eventData =
             new OIDCUserEventData(new NimbusOIDCIdToken(idToken), new NimbusOIDCUserInfo(userInfo));
+		this.logger.debug("Done OIDCUserEventData");
 
         // Notify
         this.observation.notify(new OIDCUserUpdating(modifiableDocument.getDocumentReference()), modifiableDocument,
             eventData);
+		this.logger.debug("Done Notify");
 
-        Boolean userUpdated = false;
+
+
+		Boolean userUpdated = false;
 
         // Apply the modifications
+		this.logger.debug("Apply the modifications");
+		this.logger.debug("userDocument: " + userDocument.getDocumentReference());
         if (newUser || userDocument.apply(modifiableDocument)) {
+			this.logger.debug("newUser or apply modifiableDocument");
             String comment;
             if (newUser) {
                 comment = "Create user from OpenID Connect";
@@ -416,7 +426,7 @@ public class OIDCUserManager
                 comment = "Update user from OpenID Connect";
             }
 
-			xcontext.setWikiId(this.wikiRef);
+			xcontext.setWikiId("od360twente");
             xcontext.getWiki().saveDocument(userDocument, comment, xcontext);
 
             // Now let's add the new user to XWiki.XWikiAllGroup
@@ -429,11 +439,14 @@ public class OIDCUserManager
 
         // Sync user groups with the provider
         if (this.configuration.isGroupSync()) {
-            userUpdated = updateGroupMembership(userInfo, userDocument, xcontext);
+			this.logger.debug("Sync user groups with the provider");
+
+			userUpdated = updateGroupMembership(userInfo, userDocument, xcontext);
         }
 
         // Notify
-        if (userUpdated) {
+		this.logger.debug("Notify; is user updated?: " + userUpdated);
+		if (userUpdated) {
             this.observation.notify(new OIDCUserUpdated(userDocument.getDocumentReference()), userDocument, eventData);
         }
 		xcontext.setWikiId("xwiki");

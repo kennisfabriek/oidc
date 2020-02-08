@@ -32,7 +32,7 @@
 	<artifactId>oidc</artifactId>
 
   <name>OpenID Connect</name>
-  <version>1.15.24-SNAPSHOT</version>
+  <version>1.15.29-SNAPSHOT</version>
   <packaging>pom</packaging>
   <description>Various tools to manipulate OpenID Connect protocol in XWiki</description>
 

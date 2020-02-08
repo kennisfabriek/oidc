@@ -65,23 +65,37 @@ public class OIDCUserStore
 
     public boolean updateOIDCUser(XWikiDocument userDocument, String issuer, String subject)
     {
-        XWikiContext xcontext = this.xcontextProvider.get();
+		this.logger.debug("Start updating OIDC user: {}" , userDocument.getDocumentReference().toString());
 
-        OIDCUser user = (OIDCUser) userDocument.getXObject(OIDCUser.CLASS_REFERENCE, true, xcontext);
 
-        boolean needUpdate = false;
+		XWikiContext xcontext = this.xcontextProvider.get();
 
-        if (!StringUtils.equals(user.getIssuer(), issuer)) {
-            user.setIssuer(issuer);
-            needUpdate = true;
-        }
+		try {
+			OIDCUser user = (OIDCUser) userDocument.getXObject(OIDCUser.CLASS_REFERENCE, true, xcontext);
+			this.logger.debug("OIDC user: " + user.getDocumentReference().toString());
 
-        if (!StringUtils.equals(user.getSubject(), subject)) {
-            user.setSubject(subject);
-            needUpdate = true;
-        }
+			boolean needUpdate = false;
 
-        return needUpdate;
+			if (!StringUtils.equals(user.getIssuer(), issuer)) {
+				user.setIssuer(issuer);
+				needUpdate = true;
+			}
+
+			if (!StringUtils.equals(user.getSubject(), subject)) {
+				user.setSubject(subject);
+				needUpdate = true;
+			}
+			this.logger.debug("NeedsUpdate: " + needUpdate);
+
+
+			return needUpdate;
+
+		} catch (Exception e)
+		{
+			this.logger.debug("Exception op aanmaken class: " + e.getMessage());
+		}
+
+		return false;
     }
 
     public XWikiDocument searchDocument(String issuer, String subject) throws XWikiException, QueryException
