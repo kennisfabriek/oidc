@@ -32,7 +32,7 @@
 	<artifactId>oidc</artifactId>
 
   <name>OpenID Connect</name>
-  <version>1.15.46-SNAPSHOT</version>
+  <version>1.15.50-SNAPSHOT</version>
   <packaging>pom</packaging>
   <description>Various tools to manipulate OpenID Connect protocol in XWiki</description>
 
@@ -94,12 +94,16 @@
     </pluginManagement>
   </build>
 	<distributionManagement>
-		<snapshotRepository>
+<!--		<repository>-->
+<!--			<id>kennisfabriek-release</id>-->
+<!--			<name>Kennisfabriek Repository for Release</name>-->
+<!--			<url>http://nexus.kennisfabriek.wiki/content/repositories/kennisfabriek-release</url>-->
+<!--		</repository>-->
 
+		<snapshotRepository>
 			<id>kennisfabriek-development</id>
 			<name>Kennisfabriek Repository for Development</name>
 			<url>http://nexus.kennisfabriek.wiki/content/repositories/kennisfabriek-develop</url>
-
 		</snapshotRepository>
 	</distributionManagement>
   <developers>

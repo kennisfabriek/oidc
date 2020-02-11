@@ -112,13 +112,13 @@ public class OIDCUserStore
 		this.wikiRef = configuration.getSubWikiId();
 
 		Query query = this.queries.createQuery("from doc.object(" + OIDCUser.CLASS_FULLNAME
-            + ") as oidc where oidc.issuer = :issuer and oidc.subject = :subject", Query.XWQL);
+			+ ") as oidc where oidc.issuer = :issuer and oidc.subject = :subject", Query.XWQL);
 
-        query.bindValue("issuer", issuer);
-        query.bindValue("subject", subject);
-        query.setWiki(this.wikiRef);
+		query.bindValue("issuer", issuer);
+		query.bindValue("subject", subject);
+		query.setWiki(this.wikiRef);
 
-        List<String> documents = query.execute();
+		List<String> documents = query.execute();
 
         if (documents.isEmpty()) {
 			logger.debug("documents is empty");

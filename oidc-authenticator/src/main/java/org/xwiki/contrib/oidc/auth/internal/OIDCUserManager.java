@@ -39,6 +39,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
@@ -56,17 +57,23 @@ import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.concurrent.ExecutionContextRunnable;
 import org.xwiki.contrib.oidc.OIDCUserInfo;
 import org.xwiki.contrib.oidc.auth.internal.OIDCClientConfiguration.GroupMapping;
+import org.xwiki.contrib.oidc.auth.internal.store.OIDCUser;
 import org.xwiki.contrib.oidc.auth.internal.store.OIDCUserClassDocumentInitializer;
 import org.xwiki.contrib.oidc.auth.internal.store.OIDCUserStore;
 import org.xwiki.contrib.oidc.event.OIDCUserEventData;
 import org.xwiki.contrib.oidc.event.OIDCUserUpdated;
 import org.xwiki.contrib.oidc.event.OIDCUserUpdating;
 import org.xwiki.contrib.oidc.provider.internal.OIDCException;
+import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.DocumentReferenceResolver;
+import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.observation.ObservationManager;
+import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
+import org.xwiki.query.QueryManager;
 
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.http.HTTPRequest;
@@ -118,6 +125,13 @@ public class OIDCUserManager
 
     @Inject
     private Logger logger;
+
+	@Inject
+	private QueryManager queries;
+
+	@Inject
+	@Named("current")
+	private DocumentReferenceResolver<String> resolver;
 
     private Executor executor = Executors.newFixedThreadPool(1);
 
@@ -261,20 +275,29 @@ public class OIDCUserManager
 
         XWikiDocument modifiableDocument;
         boolean newUser;
+
+        // When no OIDC user if found:
         if (userDocument == null) {
 
-        	// Check for existing user document
-			XWikiDocument existingUser = xcontext.getWiki().getDocument(this.wikiRef + ":" + XWIKI_GROUP_PREFIX + userInfo.getPreferredUsername(), xcontext);
+			// Search for pre-existing user(s) on e-mailaddress provided by oidc userinfo
+			Query query = this.queries.createQuery("where doc.object(XWiki.XWikiUsers).email like :email", Query.XWQL);
+			query.bindValue("email", userInfo.getEmailAddress());
+			query.setWiki(this.wikiRef);
 
-        	// if true
-			if(existingUser != null)
+			// Returns a list, example Xwiki.JohnDoe
+			List<String> existingUserDocuments = query.execute();
+
+        	// When we find existing users
+			if(!existingUserDocuments.isEmpty())
 			{
-				this.logger.debug("Existing user found: " + existingUser.getDocumentReference().toString());
+				this.logger.debug(existingUserDocuments.size() + "Existing user(s) found: " + existingUserDocuments.get(0));
 
-				modifiableDocument = existingUser;
-				userDocument = existingUser;
+				// Create documentref for existing user
+				String existingUserDocumentRef = this.wikiRef + ":" + existingUserDocuments.get(0);
+				userDocument = xcontext.getWiki().getDocument(existingUserDocumentRef, xcontext);
+				modifiableDocument = userDocument.clone();
+
 				newUser = false;
-				modifiableDocument = modifiableDocument.clone();
 
 			} else {
 
